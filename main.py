@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS clientes (
 print('Tabela criada com sucesso!')
 
 #Inserindo livro no banco de dados
-def cadastrar(titulo, autor, ano):
+def cadastrar_livro(titulo, autor, ano):
     try:
         conexao = sqlite3.connect('bibliotec.db')
         titulo = input('Digite o titulo do livro: ')
@@ -38,3 +38,21 @@ def cadastrar(titulo, autor, ano):
     finally:
         if conexao:
             conexao.close()
+
+#Listagem dos livros
+def listar_livros():
+    try:
+        conexao = sqlite3.connect('biblioteca.db')
+        cursor = conexao.cursor()
+        cursor.execute("SELECT * FROM clientes")
+        livro = cursor.fetchall()
+        print("\nLista dos livros:")
+        print(f'ID: {livro[0]} | Titulo: {livro[1]} | Autor: {livro[2]} | Disponibilidade: {livro[3]}')
+    except Exception as erro:
+        print(f'Erro ao listar os livros {erro}')
+    finally:
+        if conexao:
+            conexao.close()
+    
+
+
