@@ -57,7 +57,7 @@ def listar_livros():
 #Atualizar se estiver disponivel 
 def atualizar_livro():
     novo_status = input("Deseja marcar o livro como 'sim' ou 'não'?: ").strip().lower()
-    id_livro = input("Digite o ID do livro que deseja atualizar: ").strip()
+    id_livro = input('Digite o ID do livro que deseja atualizar: ').strip()
     if novo_status not in ("sim", "não"):
         print("Valor inválido! Digite 'sim' ou 'não'.")
         return
@@ -79,4 +79,28 @@ def atualizar_livro():
     conexao.close()
     print('Dados atualizados!')
 
-atualizar_livro()
+def remover_livro():
+    id_livro = input('Digite o ID do livro que deseja remover:  ').strip()
+    if not id_livro.isdigit():
+        print('ID inválido! Deve ser um número.')
+        return
+    id_livro = int(id_livro)
+    confirmar = input(f'Tem certeza que deseja remover o livro com ID{id_livro}?: ')
+    if confirmar != 's':
+        print('Operaçaõ cancelada.')
+        return
+    conexao = sqlite3.connect('biblioteca.db')
+    cursor = conexao.cursor()
+    cursor.execute("""
+            SELECT * FROM livros 
+            WHERE id = ? """,
+            (id_livro))
+    livro = cursor.fetchone()
+    if not livro:
+        print(f'Nenhum livro encontrado com ID {id_livro}. ')
+    else:
+        cursor.execute("DELETE FROM livros WHERE id = ?", (id_livro,))
+        conexao.commit()
+        print(f'Livro com ID {id_livro} removido com sucesso.')
+
+remover_livro()
