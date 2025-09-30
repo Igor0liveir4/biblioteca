@@ -54,5 +54,29 @@ def listar_livros():
         if conexao:
             conexao.close()
     
+#Atualizar se estiver disponivel 
+def atualizar_livro():
+    novo_status = input("Deseja marcar o livro como 'sim' ou 'não'?: ").strip().lower()
+    id_livro = input("Digite o ID do livro que deseja atualizar: ").strip()
+    if novo_status not in ("sim", "não"):
+        print("Valor inválido! Digite 'sim' ou 'não'.")
+        return
 
+    if not id_livro.isdigit():
+        print("ID inválido! Deve ser um número.")
+        return
+    id_livro = int(id_livro)
 
+    conexao = sqlite3.connect('biblioteca.db')
+    cursor = conexao.cursor()
+    cursor.execute("""
+        UPDATE clientes
+        SET disponivel = ?
+        WHERE id = ?
+    """, (novo_status, id_livro))
+
+    conexao.commit()
+    conexao.close()
+    print('Dados atualizados!')
+
+atualizar_livro()
