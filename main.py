@@ -11,16 +11,16 @@ CREATE TABLE IF NOT EXISTS clientes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     titulo TEXT NOT NULL,
     autor TEXT NOT NULL,
-    ano INTERGER,
+    ano INTEGER,
     disponivel TEXT
     )               
 """)
 print('Tabela criada com sucesso!')
 
 #Inserindo livro no banco de dados
-def cadastrar_livro(titulo, autor, ano):
+def cadastrar_livro():
     try:
-        conexao = sqlite3.connect('bibliotec.db')
+        conexao = sqlite3.connect('biblioteca.db')
         titulo = input('Digite o titulo do livro: ')
         autor = input('Fale o nome do autor do livro: ')
         ano = int(input('Qual foi o ano de lançamento do Livro?: '))
@@ -31,7 +31,7 @@ def cadastrar_livro(titulo, autor, ano):
         VALUES (?, ?, ?, ?)
         """, (titulo, autor, ano, "Sim")
         )
-        conexao.commit
+        conexao.commit()
         print("Livro cadastrado com sucesso!")
     except Exception as erro:
         print(f'Erro ao cadastrar esse livro {erro}')
@@ -45,9 +45,10 @@ def listar_livros():
         conexao = sqlite3.connect('biblioteca.db')
         cursor = conexao.cursor()
         cursor.execute("SELECT * FROM clientes")
-        livro = cursor.fetchall()
+        livros = cursor.fetchall()
         print("\nLista dos livros:")
-        print(f'ID: {livro[0]} | Titulo: {livro[1]} | Autor: {livro[2]} | Disponibilidade: {livro[3]}')
+        for livro in livros:
+            print(f'ID: {livro[0]} | Titulo: {livro[1]} | Autor: {livro[2]} | Ano: {livro[3]} | Disponibilidade: {livro[4]}')
     except Exception as erro:
         print(f'Erro ao listar os livros {erro}')
     finally:
@@ -79,6 +80,7 @@ def atualizar_livro():
     conexao.close()
     print('Dados atualizados!')
 
+#Remover livro cadastrado
 def remover_livro():
     id_livro = input('Digite o ID do livro que deseja remover:  ').strip()
     if not id_livro.isdigit():
@@ -86,21 +88,47 @@ def remover_livro():
         return
     id_livro = int(id_livro)
     confirmar = input(f'Tem certeza que deseja remover o livro com ID{id_livro}?: ')
-    if confirmar != 's':
+    if confirmar != 'sim':
         print('Operaçaõ cancelada.')
         return
     conexao = sqlite3.connect('biblioteca.db')
     cursor = conexao.cursor()
     cursor.execute("""
-            SELECT * FROM livros 
+            SELECT * FROM clientes
             WHERE id = ? """,
-            (id_livro))
-    livro = cursor.fetchone()
-    if not livro:
-        print(f'Nenhum livro encontrado com ID {id_livro}. ')
-    else:
-        cursor.execute("DELETE FROM livros WHERE id = ?", (id_livro,))
+            (id_livro,))
+    if cursor.fetchall():
+        cursor.execute("""
+            DELETE FROM clientes
+            WHERE id = ? """,
+            (id_livro,))
         conexao.commit()
-        print(f'Livro com ID {id_livro} removido com sucesso.')
+        print('Livro removido com sucesso!')
+    else:
+        print('Livro não encotrado.')
+    conexao.close()
 
-remover_livro()
+while True:
+    print("""
+======= MENU =======
+1 - Cadastrar livro
+2 - Listar livros
+3 - Atualizar disponibilidade
+4 - Remover livro
+5 - sair
+====================
+    """)
+    opcao = input('Escolha uma opção que deseja: ').lower()
+    if opcao == '1':
+        cadastrar_livro()
+    elif opcao == '2':
+        listar_livros()
+    elif opcao == '3':
+        atualizar_livro()
+    elif opcao == '4':
+        remover_livro()
+    elif opcao == '5':
+        print('Saindo do sistema...')
+        break
+    else:
+        print('Operação inválida. Tente novamente.')
